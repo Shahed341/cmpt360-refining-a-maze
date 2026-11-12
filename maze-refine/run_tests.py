@@ -7,9 +7,10 @@ If a check fails, Python stops with an AssertionError and shows the line that fa
 from maze_tools import read_maze, all_pairs_bfs, is_valid_refinement, edge_str
 
 
+# =====================================================================
 # Step 3: reading a maze, measuring distances, checking the +2 rule.
 # All expected answers come from the handout maze (see the explainer doc).
-
+# =====================================================================
 
 # Test 1: the file is read correctly -> 3 x 3 grid, 9 points, 9 corridors.
 n, m, V, E = read_maze("examples/prof_example.txt")
@@ -39,3 +40,32 @@ assert not is_valid_refinement(V, [x for x in E if x != e], dM)
 print("remove", edge_str(e, m), "-> NOT allowed, (0,0) is cut off")
 
 print("Step 3 tests passed")
+
+
+# =====================================================================
+# Step 4: the brute-force baseline finds the smallest valid R.
+# =====================================================================
+from baseline import solve_baseline
+
+# Test 6: the handout maze -> best R has 8 corridors, and it is valid.
+kept, checks = solve_baseline(V, E)
+assert len(kept) == 8 and is_valid_refinement(V, kept, dM)
+print("baseline, handout maze: R has", len(kept), "corridors after", checks, "checks")
+
+# Test 7: the full 2 x 3 grid (6 points, 7 corridors) -> best R has 5 corridors.
+#   (0,0)=0 (0,1)=1 (0,2)=2
+#   (1,0)=3 (1,1)=4 (1,2)=5
+V2 = [0, 1, 2, 3, 4, 5]
+E2 = [(0, 1), (1, 2), (3, 4), (4, 5), (0, 3), (1, 4), (2, 5)]
+kept2, _ = solve_baseline(V2, E2)
+assert len(kept2) == 5 and is_valid_refinement(V2, kept2, all_pairs_bfs(V2, E2))
+print("baseline, full 2 x 3 grid: R has", len(kept2), "corridors")
+
+# Test 8: a maze with no loops (a straight corridor of 4 points) -> nothing can go.
+V3 = [0, 1, 2, 3]
+E3 = [(0, 1), (1, 2), (2, 3)]
+kept3, _ = solve_baseline(V3, E3)
+assert kept3 == E3
+print("baseline, maze without loops: keeps all", len(kept3), "corridors")
+
+print("Step 4 tests passed")
