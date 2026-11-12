@@ -69,3 +69,73 @@ assert kept3 == E3
 print("baseline, maze without loops: keeps all", len(kept3), "corridors")
 
 print("Step 4 tests passed")
+
+
+# =====================================================================
+# Step 5: random mazes and complete grids (used for all later testing).
+# =====================================================================
+from maze_tools import full_grid, random_maze, write_maze
+
+# Test 9: the complete 2 x 3 grid has 6 points and 7 corridors (same as Test 7).
+Vf, Ef = full_grid(2, 3)
+assert len(Vf) == 6 and sorted(Ef) == sorted(E2)
+
+# Test 10: random mazes are connected, use only grid corridors, and the same seed
+# gives the same maze. loop_prob 0 gives a tree (no loops), 1 gives the full grid.
+for seed in range(20):
+    Vr, Er = random_maze(4, 5, 0.4, seed)
+    dist = all_pairs_bfs(Vr, Er)
+    assert all(len(dist[v]) == len(Vr) for v in Vr)          # every point reaches all
+    assert set(Er) <= set(full_grid(4, 5)[1])                 # only real grid corridors
+    assert random_maze(4, 5, 0.4, seed) == (Vr, Er)           # repeatable
+assert len(random_maze(4, 5, 0.0, 1)[1]) == 20 - 1           # tree: N - 1 corridors
+assert random_maze(4, 5, 1.0, 1)[1] == full_grid(4, 5)[1]    # every corridor
+print("random mazes: connected, repeatable, tree at p=0, full grid at p=1")
+
+# Test 11: saving a maze and reading it back gives the same maze.
+Vr, Er = random_maze(3, 4, 0.5, 7)
+write_maze("examples/_test_roundtrip.txt", 3, 4, Er, "test file")
+assert read_maze("examples/_test_roundtrip.txt") == (3, 4, Vr, Er)
+import os
+os.remove("examples/_test_roundtrip.txt")
+
+# Test 12: the baseline gives a valid answer on 10 small random mazes.
+for seed in range(10):
+    Vr, Er = random_maze(3, 3, 0.5, seed)
+    kept, _ = solve_baseline(Vr, Er)
+    assert is_valid_refinement(Vr, kept, all_pairs_bfs(Vr, Er))
+    assert len(kept) >= len(Vr) - 1                           # R is at least a tree
+print("baseline: valid answers on 10 random 3 x 3 mazes")
+
+print("Step 5 tests passed")
+
+
+# =====================================================================
+# Step 6: fasterAlgo gives exactly the same optimum as the baseline.
+# =====================================================================
+from fasterAlgo import solve_fast
+
+# Test 13: the handout maze -> 8 corridors, valid, and no more checks than the baseline.
+kf, cf = solve_fast(V, E, m)
+kb, cb = solve_baseline(V, E)
+assert len(kf) == 8 and is_valid_refinement(V, kf, dM) and cf <= cb
+print("fasterAlgo, handout maze: R has", len(kf), "corridors after", cf, "checks (baseline:", cb, ")")
+
+# Test 14: same optimum as the baseline on 40 random mazes, and every answer is valid.
+for seed in range(40):
+    n_, m_ = [(3, 3), (3, 4), (4, 4), (2, 6)][seed % 4]
+    Vr, Er = random_maze(n_, m_, [0.3, 0.6, 1.0][seed % 3], seed)
+    kb, _ = solve_baseline(Vr, Er)
+    kf, _ = solve_fast(Vr, Er, m_, n_)
+    assert len(kf) == len(kb), (n_, m_, seed)
+    assert is_valid_refinement(Vr, kf, all_pairs_bfs(Vr, Er))
+print("fasterAlgo agrees with the baseline on 40 random mazes")
+
+# Test 15: complete grids with at most 3 rows -> the comb, a spanning tree (Theorem 3).
+for n_, m_ in [(2, 5), (3, 3), (3, 6), (6, 2)]:
+    Vf, Ef = full_grid(n_, m_)
+    kf, _ = solve_fast(Vf, Ef, m_, n_)
+    assert len(kf) == n_ * m_ - 1 and is_valid_refinement(Vf, kf, all_pairs_bfs(Vf, Ef))
+print("fasterAlgo: thin complete grids give a spanning tree (Theorem 3)")
+
+print("Step 6 tests passed")
