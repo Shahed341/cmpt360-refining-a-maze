@@ -139,3 +139,18 @@ for n_, m_ in [(2, 5), (3, 3), (3, 6), (6, 2)]:
 print("fasterAlgo: thin complete grids give a spanning tree (Theorem 3)")
 
 print("Step 6 tests passed")
+
+
+# =====================================================================
+# Step 8: switching off the packing bound (used in the experiments)
+# must not change the answer, only the speed.
+# =====================================================================
+# Test 16: fasterAlgo with and without idea (5) give the same optimum.
+for seed in range(20):
+    Vr, Er = random_maze(4, 4, [0.3, 0.6][seed % 2], seed)
+    a, _ = solve_fast(Vr, Er, 4, 4, packing=True)
+    b, _ = solve_fast(Vr, Er, 4, 4, packing=False)
+    assert len(a) == len(b)
+print("fasterAlgo: same optimum with and without the packing bound")
+
+print("Step 8 tests passed")
