@@ -64,10 +64,12 @@ def special_case(verts, edges, n, m):
     return None
 
 
-def solve_fast(verts, edges, m, n=None):
+def solve_fast(verts, edges, m, n=None, packing=True):
     """Find the smallest valid refined maze R, using ideas (0)-(5).
 
     Returns (kept_edges, checks), where checks = number of full BFS checks made.
+    packing=False switches off idea (5) (the square-packing bound). The answer stays
+    optimal; this is only used in experiments.py to measure how much idea (5) helps.
     """
     if n is None:
         n = max(verts) // m + 1
@@ -105,6 +107,8 @@ def solve_fast(verts, edges, m, n=None):
 
     def upper_bound(start, removed):
         """Most deletions this branch can still reach (Lemma 5 + Lemma 4)."""
+        if not packing:               # without idea (5): only the baseline-style bound
+            return len(removed) + min(len(cand) - start, max_del - len(removed))
         free = 0
         for q in squares:
             if any(x in removed for x in q):
