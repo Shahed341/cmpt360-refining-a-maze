@@ -1,16 +1,41 @@
 """
-run_tests.py - checks that every piece works. We add more checks after each step.
+CMPT 360 - Algorithm Design Module
+Option 1: Refining a Maze
+File    : run_tests.py
+Author  : Md Shahed
+NSID    : lsx341
+Date    : Nov 5, 2026
 
-Run it from the maze-refine folder:   python run_tests.py
-If a check fails, Python stops with an AssertionError and shows the line that failed.
+PURPOSE
+Check that every piece works. Tests were added after each step of the
+project, so they are grouped by step:
+
+   Step 3   reading a maze, measuring distances, checking the +2 rule
+   Step 4   the brute-force baseline finds the smallest valid R
+   Step 5   random mazes and complete grids
+   Step 6   fasterAlgo gives exactly the same optimum as the baseline
+   Step 8   switching off the packing bound does not change the answer
+
+All expected answers for the handout maze come from the explainer doc.
+
+DEPENDENCIES
+maze_tools.py   read_maze, write_maze, all_pairs_bfs, is_valid_refinement,
+                edge_str, full_grid, random_maze
+baseline.py     solve_baseline
+fasterAlgo.py   solve_fast
+examples/prof_example.txt (the handout maze)
+
+USAGE
+   python run_tests.py      (run from the maze-refine folder)
+
+If a check fails, Python stops with an AssertionError and shows the line
+that failed.
 """
+
 from maze_tools import read_maze, all_pairs_bfs, is_valid_refinement, edge_str
 
 
-# =====================================================================
 # Step 3: reading a maze, measuring distances, checking the +2 rule.
-# All expected answers come from the handout maze (see the explainer doc).
-# =====================================================================
 
 # Test 1: the file is read correctly -> 3 x 3 grid, 9 points, 9 corridors.
 n, m, V, E = read_maze("examples/prof_example.txt")
@@ -42,9 +67,8 @@ print("remove", edge_str(e, m), "-> NOT allowed, (0,0) is cut off")
 print("Step 3 tests passed")
 
 
-# =====================================================================
 # Step 4: the brute-force baseline finds the smallest valid R.
-# =====================================================================
+
 from baseline import solve_baseline
 
 # Test 6: the handout maze -> best R has 8 corridors, and it is valid.
@@ -71,9 +95,8 @@ print("baseline, maze without loops: keeps all", len(kept3), "corridors")
 print("Step 4 tests passed")
 
 
-# =====================================================================
 # Step 5: random mazes and complete grids (used for all later testing).
-# =====================================================================
+
 from maze_tools import full_grid, random_maze, write_maze
 
 # Test 9: the complete 2 x 3 grid has 6 points and 7 corridors (same as Test 7).
@@ -97,7 +120,7 @@ Vr, Er = random_maze(3, 4, 0.5, 7)
 write_maze("examples/_test_roundtrip.txt", 3, 4, Er, "test file")
 assert read_maze("examples/_test_roundtrip.txt") == (3, 4, Vr, Er)
 import os
-os.remove("examples/_test_roundtrip.txt")
+os.remove("examples/_test_roundtrip.txt")                     # clean up the test file
 
 # Test 12: the baseline gives a valid answer on 10 small random mazes.
 for seed in range(10):
@@ -110,9 +133,8 @@ print("baseline: valid answers on 10 random 3 x 3 mazes")
 print("Step 5 tests passed")
 
 
-# =====================================================================
 # Step 6: fasterAlgo gives exactly the same optimum as the baseline.
-# =====================================================================
+
 from fasterAlgo import solve_fast
 
 # Test 13: the handout maze -> 8 corridors, valid, and no more checks than the baseline.
@@ -141,10 +163,9 @@ print("fasterAlgo: thin complete grids give a spanning tree (Theorem 3)")
 print("Step 6 tests passed")
 
 
-# =====================================================================
-# Step 8: switching off the packing bound (used in the experiments)
-# must not change the answer, only the speed.
-# =====================================================================
+# Step 8: switching off the packing bound (used in the experiments) must not
+# change the answer, only the speed.
+
 # Test 16: fasterAlgo with and without idea (5) give the same optimum.
 for seed in range(20):
     Vr, Er = random_maze(4, 4, [0.3, 0.6][seed % 2], seed)

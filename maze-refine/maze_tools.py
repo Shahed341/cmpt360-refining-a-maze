@@ -1,39 +1,78 @@
 """
-maze_tools.py - the toolbox for "Refining a Maze" (CMPT 360, Option 1).
+CMPT 360 - Algorithm Design Module
+Option 1: Refining a Maze
+File    : maze_tools.py
+Author  : Md Shahed
+NSID    : lsx341
+Date    : Nov 5, 2026
 
-Every other file (baseline.py, fasterAlgo.py, the experiments) imports these tools:
-    read_maze            read a maze from a text file
-    write_maze           save a maze to a text file (same format)
-    edge_str             print a corridor in a readable way, e.g. (1,0)-(1,1)
-    all_pairs_bfs        measure the shortest distance between every pair of points
-    is_valid_refinement  check the +2 rule for a smaller maze R
-    squares_of_edges     for each corridor, the little 1x1 squares it belongs to
-    full_grid            the complete n x m grid (every possible corridor)
-    random_maze          a random connected maze, used for testing and experiments
+PURPOSE
+The shared toolbox. Every other file (baseline.py, fasterAlgo.py, the tests
+and the experiments) imports its maze reading, writing, distance and
+validity tools from here.
 
-How points are stored:
-    A point (row r, column c) gets the number  id = r * m + c,  where m = number of columns.
-    Example in a 3 x 3 grid:  (0,0) -> 0,  (1,0) -> 3,  (1,1) -> 4,  (2,2) -> 8.
-    A corridor is a pair of point numbers, smaller first:  (1,0)-(1,1)  ->  (3, 4).
+CONTENTS
+   read_maze            read a maze from a text file
+   write_maze           save a maze to a text file (same format)
+   edge_str             format a corridor as "(r,c)-(r,c)"
+   all_pairs_bfs        shortest distance between every pair of points
+   is_valid_refinement  check the +2 rule for a smaller maze R
+   grid_corridors       every possible corridor of the n x m grid
+   full_grid            the complete n x m grid (every possible corridor)
+   random_maze          a random connected maze, for tests and experiments
+   squares_of_edges     for each corridor, the unit squares it belongs to
 
-Maze file format (lines starting with # are comments and are skipped):
-    n m            grid size: n rows, m columns
-    k              number of corridors
-    r1 c1 r2 c2    one line per corridor, joining (r1,c1) and (r2,c2)
+HOW POINTS ARE STORED
+A point (row r, column c) gets the number  id = r * m + c,  where m is the
+number of columns. A corridor is a pair of point numbers, smaller first.
+
+EXAMPLE (3 x 3 grid)
+   (0,0) -> 0,  (1,0) -> 3,  (1,1) -> 4,  (2,2) -> 8
+   corridor (1,0)-(1,1)  ->  (3, 4)
+
+MAZE FILE FORMAT (lines starting with # are comments and are skipped)
+   n m            grid size: n rows, m columns
+   k              number of corridors
+   r1 c1 r2 c2    one line per corridor, joining (r1,c1) and (r2,c2)
+
+DEPENDENCIES
+Python standard library only (collections, random).
+
+Imported by: baseline.py, fasterAlgo.py, run_tests.py, grid_table.py,
+             generate.py, experiments.py
 """
+
 from collections import deque
 import random
 
 
+# Reading and writing maze files
+
 def read_maze(path):
-    """Read a maze file and return (n, m, points, corridors).
+    """
+    Read a maze file.
 
-    n, m       grid size (rows, columns)
-    points     sorted list of point numbers that appear in some corridor
-    corridors  sorted list of pairs (a, b) with a < b
-
+    Also checks that every corridor joins two neighbouring grid points.
     Example: the line "1 0 1 1" becomes the corridor (3, 4) in a 3-column grid.
-    It also checks that every corridor joins two neighbouring grid points.
+
+    Parameters
+    ----------
+    path : str
+        Path of the maze file.
+
+    Returns
+    -------
+    n, m : int
+        Grid size (rows, columns).
+    verts : list of int
+        Sorted point numbers that appear in some corridor.
+    edges : list of (int, int)
+        Sorted corridors (a, b) with a < b.
+
+    Raises
+    ------
+    ValueError
+        If a corridor does not join two neighbouring grid points.
     """
     # 1. Collect every number in the file, skipping comments and blank lines.
     nums = []
@@ -50,7 +89,7 @@ def read_maze(path):
     edges = []
     for i in range(k):
         r1, c1, r2, c2 = nums[3 + 4 * i: 7 + 4 * i]
-        # neighbours differ by exactly 1 step up/down or left/right
+        # Neighbours differ by exactly 1 step up/down or left/right.
         if abs(r1 - r2) + abs(c1 - c2) != 1:
             raise ValueError(f"({r1},{c1})-({r2},{c2}) is not a grid edge")
         a, b = r1 * m + c1, r2 * m + c2               # (row, col) -> point number
@@ -63,9 +102,21 @@ def read_maze(path):
 
 
 def write_maze(path, n, m, edges, comment=""):
-    """Save a maze to a file in the same format read_maze reads.
+    """
+    Save a maze to a file in the same format read_maze reads.
 
-    Example: the corridor (3, 4) in a 3-column grid is written as the line "1 0 1 1".
+    Example: the corridor (3, 4) in a 3-column grid is written as "1 0 1 1".
+
+    Parameters
+    ----------
+    path : str
+        Path of the file to write (overwritten if it exists).
+    n, m : int
+        Grid size (rows, columns).
+    edges : list of (int, int)
+        Corridors of the maze.
+    comment : str, optional
+        Written as a "# ..." line at the top of the file.
     """
     with open(path, "w") as f:
         if comment:
@@ -76,24 +127,54 @@ def write_maze(path, n, m, edges, comment=""):
 
 
 def edge_str(e, m):
-    """Turn a corridor (a, b) back into readable text.
+    """
+    Turn a corridor (a, b) back into readable text.
 
-    Example (3 columns): edge_str((3, 4), 3) -> "(1,0)-(1,1)".
     A point number p is row p // m, column p % m.
+    Example (3 columns): edge_str((3, 4), 3) -> "(1,0)-(1,1)".
+
+    Parameters
+    ----------
+    e : (int, int)
+        The corridor.
+    m : int
+        Number of columns.
+
+    Returns
+    -------
+    str
+        The corridor as "(r,c)-(r,c)".
     """
     a, b = e
     return f"({a // m},{a % m})-({b // m},{b % m})"
 
 
+# Distances and the +2 rule
+
 def all_pairs_bfs(verts, edges):
-    """Shortest distance between every pair of points, by BFS from every point.
+    """
+    Shortest distance between every pair of points, by BFS from every point.
 
-    Returns a dictionary of dictionaries:  dist[u][v] = fewest corridors from u to v.
-    Example (handout maze): dist[0][8] = 4, the walk (0,0)->(1,0)->(1,1)->(2,1)->(2,2).
+    BFS starts at s with distance 0, then visits its neighbours (distance 1),
+    then their unvisited neighbours (distance 2), and so on, like a ripple.
+    Example (handout maze): dist[0][8] = 4, the walk
+    (0,0) -> (1,0) -> (1,1) -> (2,1) -> (2,2).
 
-    How BFS works: start at s with distance 0, then visit its neighbours (distance 1),
-    then their unvisited neighbours (distance 2), and so on, like a ripple in water.
-    Time: one BFS is O(V + E), done from all V points -> O(V * (V + E)).
+    Parameters
+    ----------
+    verts : list of int
+        Points of the maze.
+    edges : list of (int, int)
+        Corridors of the maze.
+
+    Returns
+    -------
+    dict of dict
+        dist[u][v] = fewest corridors from u to v.
+
+    Complexity
+    ----------
+    One BFS is O(N + |E|), done from all N points -> O(N * (N + |E|)).
     """
     # Build the neighbour list of every point.
     adj = {v: [] for v in verts}
@@ -116,18 +197,37 @@ def all_pairs_bfs(verts, edges):
 
 
 def is_valid_refinement(verts, kept_edges, dist_M, slack=2):
-    """Check the +2 rule: is R = (verts, kept_edges) an allowed refined maze?
+    """
+    Check the +2 rule: is R = (verts, kept_edges) an allowed refined maze?
 
-    Returns True only if
+    R is valid only if
       1. R is connected (every point can still reach every other point), and
-      2. for every pair u, v:  d_R(u, v) <= d_M(u, v) + slack   (slack = 2).
-    dist_M is the distance table of the original maze M, from all_pairs_bfs.
-
-    Example (handout maze): removing (1,0)-(1,1) -> True  (worst trip grows by 2);
-                            removing (0,0)-(1,0) -> False ((0,0) is cut off).
-
+      2. for every pair u, v:  d_R(u, v) <= d_M(u, v) + slack.
     It runs one BFS from every point in R and stops at the first broken rule.
-    Time: O(V * (V + E)) in the worst case.
+
+    Example (handout maze):
+       removing (1,0)-(1,1) -> True   (worst trip grows by 2)
+       removing (0,0)-(1,0) -> False  ((0,0) is cut off)
+
+    Parameters
+    ----------
+    verts : list of int
+        Points of the maze (the same for M and R).
+    kept_edges : list of (int, int)
+        Corridors of the candidate R.
+    dist_M : dict of dict
+        Distance table of the original maze M, from all_pairs_bfs.
+    slack : int, optional
+        Allowed extra length per trip. Default 2.
+
+    Returns
+    -------
+    bool
+        True if R satisfies both rules.
+
+    Complexity
+    ----------
+    O(N * (N + |E|)) in the worst case.
     """
     # Build the neighbour list of R (only the corridors we kept).
     adj = {v: [] for v in verts}
@@ -137,7 +237,7 @@ def is_valid_refinement(verts, kept_edges, dist_M, slack=2):
 
     nV = len(verts)
     for s in verts:
-        # BFS from s inside R
+        # BFS from s inside R.
         d = {s: 0}
         q = deque([s])
         while q:
@@ -156,11 +256,25 @@ def is_valid_refinement(verts, kept_edges, dist_M, slack=2):
     return True                           # every pair passed both rules
 
 
-def grid_corridors(n, m):
-    """Every possible corridor of the n x m grid: each point to its right and lower neighbour.
+# Building mazes
 
-    Example (2 x 2): points 0 1 / 2 3  ->  corridors (0,1), (0,2), (1,3), (2,3).
-    An n x m grid has n*(m-1) horizontal + m*(n-1) vertical corridors.
+def grid_corridors(n, m):
+    """
+    Every possible corridor of the n x m grid.
+
+    Each point is joined to its right and lower neighbour, giving
+    n*(m-1) horizontal + m*(n-1) vertical corridors.
+    Example (2 x 2, points 0 1 / 2 3): (0,1), (0,2), (1,3), (2,3).
+
+    Parameters
+    ----------
+    n, m : int
+        Number of rows and columns.
+
+    Returns
+    -------
+    list of (int, int)
+        All grid corridors (not sorted).
     """
     E = []
     for r in range(n):
@@ -174,35 +288,67 @@ def grid_corridors(n, m):
 
 
 def full_grid(n, m):
-    """The complete n x m grid as a maze: all points, all corridors.
+    """
+    The complete n x m grid as a maze: all points, all corridors.
 
-    Returns (points, corridors). Example: full_grid(2, 3) has 6 points and 7 corridors.
+    Example: full_grid(2, 3) has 6 points and 7 corridors.
+
+    Parameters
+    ----------
+    n, m : int
+        Number of rows and columns.
+
+    Returns
+    -------
+    verts : list of int
+        All n * m points.
+    edges : list of (int, int)
+        All grid corridors, sorted.
     """
     return list(range(n * m)), sorted(grid_corridors(n, m))
 
 
 def random_maze(n, m, loop_prob, seed=None):
-    """A random connected maze on the n x m grid.
+    """
+    A random connected maze on the n x m grid.
 
     How it is built:
-      1. Shuffle all grid corridors and build a random spanning tree with Kruskal's
-         algorithm (union-find): take a corridor only if it joins two parts that are
-         not yet connected. A tree connects every point and has no loops.
-      2. Every corridor NOT in the tree is added back with probability loop_prob.
-         Each one added back creates one extra loop.
-    loop_prob = 0   -> a tree (no loops, nothing can be removed)
-    loop_prob = 1   -> the complete grid
-    The same seed always gives the same maze, so experiments can be repeated.
-    Returns (points, corridors).
+      1. Shuffle all grid corridors and build a random spanning tree with
+         Kruskal's algorithm (union-find): take a corridor only if it joins
+         two parts that are not yet connected. A tree connects every point
+         and has no loops.
+      2. Every corridor NOT in the tree is added back with probability
+         loop_prob. Each one added back creates one extra loop.
+
+       loop_prob = 0  -> a tree (no loops, nothing can be removed)
+       loop_prob = 1  -> the complete grid
+
+    Parameters
+    ----------
+    n, m : int
+        Number of rows and columns.
+    loop_prob : float
+        Probability of keeping each non-tree corridor, in [0, 1].
+    seed : int, optional
+        Random seed. The same seed always gives the same maze, so
+        experiments can be repeated.
+
+    Returns
+    -------
+    verts : list of int
+        All n * m points.
+    edges : list of (int, int)
+        Corridors of the maze, sorted.
     """
     rnd = random.Random(seed)
     E = grid_corridors(n, m)
     rnd.shuffle(E)
 
-    # union-find: parent[x] leads to the representative of x's group
+    # Union-find: parent[x] leads to the representative of x's group.
     parent = list(range(n * m))
 
     def find(x):
+        """Representative of x's group, with path halving."""
         while parent[x] != x:
             parent[x] = parent[parent[x]]     # shortcut the path (makes later finds fast)
             x = parent[x]
@@ -219,16 +365,31 @@ def random_maze(n, m, loop_prob, seed=None):
     return list(range(n * m)), sorted(tree + extra)
 
 
+# Unit squares
+
 def squares_of_edges(edges, m):
-    """For every corridor, list the unit squares (1 x 1 boxes) of the maze that contain it.
+    """
+    For every corridor, list the unit squares (1 x 1 boxes) that contain it.
 
-    Each square is stored as the tuple of its OTHER three corridors, because that is
-    what the square rule needs: corridor e may be deleted only if, for some square
-    through e, those other three corridors all stay.
-
-    Example (2 x 2 grid, points 0 1 / 2 3): the top corridor (0, 1) lies on one square,
-    whose other three sides are (0, 2), (2, 3) and (1, 3).
+    Each square is stored as the tuple of its OTHER three corridors, because
+    that is what the square rule needs: corridor e may be removed only if,
+    for some square through e, those other three corridors all stay.
     A corridor on no square (a dead end or a bridge) gets an empty list.
+
+    Example (2 x 2 grid, points 0 1 / 2 3): the top corridor (0, 1) lies on
+    one square, whose other three sides are (0, 2), (2, 3) and (1, 3).
+
+    Parameters
+    ----------
+    edges : list of (int, int)
+        Corridors of the maze.
+    m : int
+        Number of columns.
+
+    Returns
+    -------
+    dict
+        out[e] = list of squares through e, each a tuple of 3 corridors.
     """
     E = set(edges)
     out = {e: [] for e in edges}
