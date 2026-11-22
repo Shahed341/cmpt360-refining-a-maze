@@ -77,12 +77,14 @@ def solve_baseline(verts, edges):
     Find an optimal refined maze R by backtracking over sets of removed corridors.
 
     Parameters
+    ----------
     verts : list of int
         Points of the maze M (point id = row * m + col).
     edges : list of (int, int)
         Corridors of M, each stored as (smaller id, larger id).
 
     Returns
+    -------
     kept_edges : list of (int, int)
         Corridors of an optimal R (minimum number of edges).
     checks : int
