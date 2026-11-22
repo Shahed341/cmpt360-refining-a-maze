@@ -1,48 +1,53 @@
-# Refining a Maze (CMPT 360, Algorithm Design Module, Option 1)
+# Refining a Maze
 
-Given a maze M (a connected subgraph of an n x m grid), find a subgraph R with the
-fewest edges such that d_R(u, v) <= d_M(u, v) + 2 for every pair of points u, v.
+CMPT 360 – Algorithm Design Module, Option 1
+Md Shahed (lsx341)
 
-## Files
+Given a maze M (a connected subgraph of an n × m grid), find a subgraph R with
+the fewest edges such that d_R(u, v) ≤ d_M(u, v) + 2 for every pair of points.
 
-| File | What it does |
-|---|---|
-| `baseline.py` | Exact baseline: backtracking over sets of deleted corridors, BFS check, stop on failure |
-| `fasterAlgo.py` | Faster exact algorithm: special cases, square rule, loop cap, greedy seed, square-packing bound |
-| `maze_tools.py` | Shared tools: read/write mazes, BFS distances, the +2 check, unit squares, random mazes |
-| `generate.py` | Writes a random maze or a complete grid to a file |
-| `run_tests.py` | Tests for every step (both algorithms agree, answers are valid) |
-| `grid_table.py` | Produces Table 1 (complete grids) |
-| `experiments.py` | Runs the timed experiments of Section 5 and writes `results/*.csv` |
-| `summarize.py` | Prints Table 2 and the numbers used in Section 5 |
-| `make_figures.py` | Draws Figures 6 and 7 from the results |
-| `examples/` | Example mazes, including the one from the assignment handout |
+## Main files
+
+- `baseline.py` – exact baseline (backtracking with BFS checks)
+- `fasterAlgo.py` – faster exact algorithm (same answer, far fewer checks)
 
 ## Requirements
 
-Python 3.8 or newer. Only `make_figures.py` needs an extra package: `pip install matplotlib`.
+Python 3.8 or newer. `make_figures.py` also needs `pip install matplotlib`.
 
-## How to run (inside this folder)
+## How to run
+
+Run every command from inside this folder.
 
 ```
-python baseline.py examples/prof_example.txt        # handout maze -> 8 edges
-python fasterAlgo.py examples/prof_example.txt      # same answer, fewer checks
-python generate.py 5 5 0.5 7 examples/random_5x5.txt
-python fasterAlgo.py examples/random_5x5.txt
-python run_tests.py                                  # all tests, about 5 seconds
-python grid_table.py                                 # Table 1 (6x6 takes a few minutes)
-python experiments.py                                # Section 5, about 30-45 minutes
-python summarize.py                                  # Table 2 and key numbers
-python make_figures.py                               # Figures 6 and 7
+python baseline.py examples/prof_example.txt      # handout maze -> R has 8 edges
+python fasterAlgo.py examples/prof_example.txt    # same answer
 ```
 
-Add `--quiet` to `baseline.py` or `fasterAlgo.py` to hide the list of deleted edges.
+Add `--quiet` to hide the list of deleted edges.
+
+To make your own maze:
+
+```
+python generate.py 5 5 0.5 7 examples/random_5x5.txt   # rows cols loop_prob seed file
+python generate.py full 3 6 examples/full_3x6.txt      # complete grid
+```
+
+## Reproducing the report
+
+```
+python run_tests.py       # all tests (about 10 s)
+python grid_table.py      # Table 1
+python experiments.py     # Section 5 experiments (about 30-45 min, overwrites results/)
+python summarize.py       # Table 2
+python make_figures.py    # Figures 6 and 7
+```
 
 ## Maze file format
 
 ```
-# comment lines start with #
-n m            grid size (rows, columns)
+# comment
+n m            rows, columns
 k              number of corridors
-r1 c1 r2 c2    one line per corridor, joining (r1,c1) and (r2,c2)
+r1 c1 r2 c2    one line per corridor
 ```
