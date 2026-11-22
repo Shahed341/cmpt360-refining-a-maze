@@ -1,27 +1,64 @@
 """
-summarize.py - turns the experiment results into the numbers used in Section 5.
+CMPT 360 - Algorithm Design Module
+Option 1: Refining a Maze
+File    : summarize.py
+Author  : Md Shahed
+NSID    : lsx341
+Date    : Nov 16, 2026
 
-Prints:
-  - Table 2: the largest grid size each algorithm solved in all 5 runs
-  - how many times fewer checks / how much faster fasterAlgo is than the baseline
-  - the most loops each algorithm solved, and the fewest loops at which it timed out
+PURPOSE
+Turn the experiment results into the numbers used in Section 5.
 
-Usage:  python summarize.py      (after python experiments.py)
+OUTPUT
+   - Table 2: the largest grid size each algorithm solved in all 5 runs
+   - how many times fewer checks, and how much faster, each fasterAlgo
+     version is than the baseline (runs that both finished)
+   - the most loops each algorithm solved, and the fewest loops at which it
+     timed out
+   - Experiment B: runs solved per loop probability
+
+DEPENDENCIES
+results/exp_size.csv and results/exp_loops.csv, written by experiments.py.
+Python standard library only (csv, statistics).
+
+USAGE
+   python summarize.py      (after python experiments.py)
 """
+
 import csv
 import statistics
+
 
 ALGOS = ("baseline", "fasterAlgo-noPack", "fasterAlgo")
 
 
+# Helpers
+
 def load(path):
+    """
+    Read a results CSV file.
+
+    Parameters
+    ----------
+    path : str
+        Path of the CSV file.
+
+    Returns
+    -------
+    list of dict
+        One dict per row; every value is a string.
+    """
     with open(path) as f:
         return list(csv.DictReader(f))
 
 
+# Command-line entry point
+
 def main():
+    """Print Table 2 and the Section 5 numbers."""
     A, B = load("results/exp_size.csv"), load("results/exp_loops.csv")
 
+    # Table 2: largest size where all 5 runs finished.
     print("Table 2: largest size solved in all 5 runs (loop probability 0.3)")
     print(f"{'algorithm':20} {'size':8} {'median time':>12} {'median checks':>14}")
     for algo in ALGOS:
@@ -38,11 +75,13 @@ def main():
             c = statistics.median(int(r["checks"]) for r in runs)
             print(f"{algo:20} {n}x{m:<6} {t:>10.3f} s {c:>14,}")
 
+    # Speed-up over the baseline, on the same maze, when both runs finished.
     print("\nCompared with the baseline (runs that both finished):")
     for algo in ("fasterAlgo-noPack", "fasterAlgo"):
-        rc, rt = [], []
+        rc, rt = [], []                       # ratios of checks and of times
         for data, key in ((A, ("rows", "cols", "seed")), (B, ("loop_prob", "seed"))):
             for b in [r for r in data if r["algo"] == "baseline" and r["solved"] == "1"]:
+                # The matching run of this algorithm on the same maze.
                 f = [r for r in data if r["algo"] == algo and all(r[k] == b[k] for k in key)]
                 if f and f[0]["solved"] == "1" and int(f[0]["checks"]) > 0:
                     rc.append(int(b["checks"]) / int(f[0]["checks"]))
@@ -51,6 +90,7 @@ def main():
             print(f"  {algo:18}: median {statistics.median(rc):.0f}x fewer checks, "
                   f"{statistics.median(rt):.1f}x faster  ({len(rc)} runs)")
 
+    # Most loops solved and fewest loops at a timeout, over both experiments.
     print("\nLoops (both experiments):")
     for algo in ALGOS:
         ok = [int(r["loops"]) for r in A + B if r["algo"] == algo and r["solved"] == "1"]
@@ -59,6 +99,7 @@ def main():
         msg += f", first timeout at {min(bad)} loops" if bad else ", no timeouts"
         print(msg)
 
+    # Experiment B: how many of the 5 runs finished at each loop probability.
     print("\nExperiment B (5 x 5): runs solved per loop probability")
     probs = sorted({r["loop_prob"] for r in B}, key=float)
     short = {"baseline": "baseline", "fasterAlgo-noPack": "no (5)", "fasterAlgo": "faster"}
