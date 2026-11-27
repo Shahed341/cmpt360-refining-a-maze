@@ -16,23 +16,23 @@ plus every other grid corridor with probability loop_prob. A bigger
 loop_prob gives more loops.
 
 DEPENDENCIES
-maze_tools.py
+helpers/maze_tools.py
    random_maze   a random connected maze
    full_grid     the complete n x m grid
    write_maze    save a maze to a file
 
 USAGE
-   python generate.py <rows> <cols> <loop_prob> <seed> <out-file>   random maze
-   python generate.py full <rows> <cols> <out-file>                  complete grid
+   python -m helpers.generate <rows> <cols> <loop_prob> <seed> <out-file>   random maze
+   python -m helpers.generate full <rows> <cols> <out-file>                  complete grid
 
 Examples:
-   python generate.py 5 5 0.5 7 examples/random_5x5.txt
-   python generate.py full 3 12 examples/full_3x12.txt
+   python -m helpers.generate 5 5 0.5 7 examples/random_5x5.txt
+   python -m helpers.generate full 3 12 examples/full_3x12.txt
 """
 
 import sys
 
-from maze_tools import random_maze, full_grid, write_maze
+from helpers.maze_tools import random_maze, full_grid, write_maze
 
 
 # Command-line entry point

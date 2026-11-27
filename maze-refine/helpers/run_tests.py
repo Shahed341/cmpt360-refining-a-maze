@@ -19,20 +19,20 @@ project, so they are grouped by step:
 All expected answers for the handout maze come from the explainer doc.
 
 DEPENDENCIES
-maze_tools.py   read_maze, write_maze, all_pairs_bfs, is_valid_refinement,
+helpers/maze_tools.py   read_maze, write_maze, all_pairs_bfs, is_valid_refinement,
                 edge_str, full_grid, random_maze
 baseline.py     solve_baseline
 fasterAlgo.py   solve_fast
 examples/prof_example.txt (the handout maze)
 
 USAGE
-   python run_tests.py      (run from the maze-refine folder)
+   python -m helpers.run_tests      (run from the maze-refine folder)
 
 If a check fails, Python stops with an AssertionError and shows the line
 that failed.
 """
 
-from maze_tools import read_maze, all_pairs_bfs, is_valid_refinement, edge_str
+from helpers.maze_tools import read_maze, all_pairs_bfs, is_valid_refinement, edge_str
 
 
 # Step 3: reading a maze, measuring distances, checking the +2 rule.
@@ -97,7 +97,7 @@ print("Step 4 tests passed")
 
 # Step 5: random mazes and complete grids (used for all later testing).
 
-from maze_tools import full_grid, random_maze, write_maze
+from helpers.maze_tools import full_grid, random_maze, write_maze
 
 # Test 9: the complete 2 x 3 grid has 6 points and 7 corridors (same as Test 7).
 Vf, Ef = full_grid(2, 3)

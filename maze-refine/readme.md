@@ -19,15 +19,15 @@ Add `--quiet` to hide the list of deleted edges.
 
 
 ### To make your own maze:
-python generate.py 5 5 0.5 7 examples/random_5x5.txt   # rows cols loop_prob seed file
-python generate.py full 3 6 examples/full_3x6.txt      # complete grid
+python -m helpers.generate 5 5 0.5 7 examples/random_5x5.txt   # rows cols loop_prob seed file
+python -m helpers.generate full 3 6 examples/full_3x6.txt      # complete grid
 
 ## Reproducing the report
-python run_tests.py       # all tests (about 10 s)
-python grid_table.py      # Table 1
-python experiments.py     # Section 5 experiments (about 30-45 min, overwrites results/)
-python summarize.py       # Table 2
-python make_figures.py    # Figures 6 and 7
+python -m helpers.run_tests       # all tests (about 10 s)
+python -m helpers.grid_table      # Table 1
+python -m helpers.experiments     # Section 5 experiments (about 30-45 min, overwrites results/)
+python -m helpers.summarize       # Table 2
+python -m helpers.make_figures    # Figures 6 and 7
 
 ## Maze file format
 - # comment

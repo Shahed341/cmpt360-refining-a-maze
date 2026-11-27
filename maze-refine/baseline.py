@@ -37,7 +37,7 @@ EXAMPLE (handout maze, 3 x 3, 9 corridors)
    Best: 1 corridor removed, so R has 8 corridors.
 
 DEPENDENCIES
-maze_tools.py
+helpers/maze_tools.py
    read_maze            read a maze file   -> (n, m, verts, edges)
    all_pairs_bfs        shortest distances in M
    is_valid_refinement  test the +2 condition for a candidate R
@@ -67,7 +67,7 @@ Example:
 import sys
 import time
 
-from maze_tools import read_maze, all_pairs_bfs, is_valid_refinement, edge_str
+from helpers.maze_tools import read_maze, all_pairs_bfs, is_valid_refinement, edge_str
 
 
 # Solver

@@ -26,7 +26,7 @@ METHOD
    0.0, 0.1, ..., 1.0.
 
 DEPENDENCIES
-maze_tools.py
+helpers/maze_tools.py
    random_maze      a random connected maze
 baseline.py
    solve_baseline   the exact baseline solver
@@ -38,9 +38,9 @@ One CSV row per run with the columns in FIELDS. solved = 0 means the run hit
 the time limit; then opt and checks are empty and seconds = the limit.
 
 USAGE
-   python experiments.py              30 s limit per run (about 30-45 minutes)
-   python experiments.py 10           10 s limit per run (faster, less data)
-   python experiments.py 2 --quick    small sizes only, to test that everything works
+   python -m helpers.experiments              30 s limit per run (about 30-45 minutes)
+   python -m helpers.experiments 10           10 s limit per run (faster, less data)
+   python -m helpers.experiments 2 --quick    small sizes only, to test that everything works
 """
 
 import csv
@@ -48,7 +48,7 @@ import sys
 import time
 import multiprocessing as mp
 
-from maze_tools import random_maze
+from helpers.maze_tools import random_maze
 from baseline import solve_baseline
 from fasterAlgo import solve_fast
 

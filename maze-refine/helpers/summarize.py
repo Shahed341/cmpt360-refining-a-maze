@@ -22,7 +22,7 @@ results/exp_size.csv and results/exp_loops.csv, written by experiments.py.
 Python standard library only (csv, statistics).
 
 USAGE
-   python summarize.py      (after python experiments.py)
+   python -m helpers.summarize      (after python -m helpers.experiments)
 """
 
 import csv

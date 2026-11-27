@@ -21,7 +21,7 @@ results/exp_size.csv and results/exp_loops.csv, written by experiments.py.
 
 USAGE
    pip install matplotlib      (once)
-   python make_figures.py      (after python experiments.py)
+   python -m helpers.make_figures      (after python -m helpers.experiments)
 """
 
 import csv

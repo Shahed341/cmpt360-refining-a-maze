@@ -18,7 +18,7 @@ Grids with at most 3 rows or columns are answered by Theorem 3 (the comb),
 so no search is needed.
 
 DEPENDENCIES
-maze_tools.py
+helpers/maze_tools.py
    full_grid            the complete n x m grid
    all_pairs_bfs        shortest distances in M
    is_valid_refinement  test the +2 condition for the answer
@@ -26,14 +26,14 @@ fasterAlgo.py
    solve_fast           the faster exact solver
 
 USAGE
-   python grid_table.py                 all grids of Table 1 (6 x 6 can take minutes)
-   python grid_table.py 4x4 4x5 5x5     only the grids you list
+   python -m helpers.grid_table                 all grids of Table 1 (6 x 6 can take minutes)
+   python -m helpers.grid_table 4x4 4x5 5x5     only the grids you list
 """
 
 import sys
 import time
 
-from maze_tools import full_grid, is_valid_refinement, all_pairs_bfs
+from helpers.maze_tools import full_grid, is_valid_refinement, all_pairs_bfs
 from fasterAlgo import solve_fast
 
 
